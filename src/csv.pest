@@ -1,0 +1,120 @@
+// word = { (ASCII_ALPHA)+ }
+//
+
+
+ws = _{( " " | "\r\n" | "\n" | "\t" )}
+
+//NUMERIC
+unsigned = {(ASCII_DIGIT)+}
+integer = { ("-")? ~ (ASCII_DIGIT)+ }
+float = { ("-")? ~ (ASCII_DIGIT)+ ~ "." ~ ((ASCII_DIGIT)+)? }
+
+semicolon = {(";")}
+comma = {(",")}
+
+ident = { (ASCII_ALPHA) ~ (ASCII_ALPHANUMERIC)* }
+
+
+
+
+
+//OPS
+ArithmOP = {
+    (
+        "+"
+      | "-"
+      | "*"
+      | "/"
+    )
+}
+BoolOP = {
+    (
+        "&&"
+      | "||"
+      |"=="
+      |"!="
+      |"!"
+    )
+}
+OP = {
+    (ArithmOP | BoolOP)
+}
+
+
+BOOLEAN = {
+    "bool"
+}
+
+UNSIGNED_INT = {
+    (
+       "u8"
+      | "u16"
+      | "u32"
+      | "u64"
+      | "u128"
+      | "usize"
+    )
+}
+
+SIGNED_INT = {
+    (
+        "i8"
+      | "i16"
+      | "i32"
+      | "i64"
+      | "i128"
+      | "isize"
+    )
+}
+FLOATING = {
+    (
+       "f32"
+      | "f64"
+    )
+}
+
+Type = {
+    (
+        ( UNSIGNED_INT | SIGNED_INT | FLOATING | BOOLEAN | (ident))
+    )
+}
+
+leftBracket = { "{" }
+rightBracket = { "}" }
+leftParen = { "(" }
+rightParen = { ")" }
+
+let = { "let" ~ (ws)+ ~ ident ~ ( (ws)* ~ ":" ~ (ws)* ~ Type)? ~ (ws)? ~ ("=") ~ (ws)? ~ (expr| ident) ~ (ws)? ~ semicolon }
+
+expr = {
+  (
+
+(( ident | unsigned | integer | float ) ~ ( ((ws)*) ~ (OP) ~ ((ws)*) ~ (expr))?)
+|(leftBracket) ~ (ws)* ~ (( ident | unsigned | integer | float ) ~ ( ((ws)*) ~ (OP) ~ ((ws)*) ~ (expr))?) ~ (ws)* ~ (rightBracket)
+|(let)
+
+    )
+}
+
+TypeOf = { (ws)* ~ ":" ~ (ws)* ~ Type }
+
+
+FunctionDef = {
+    (
+    "fun" ~ (ws)+ ~ ident ~ (ws)* ~ leftParen ~ (ws)* ~ ( (ident ~ (TypeOf)?)? ~ (ws)* ~ rightParen )
+    |"fun" ~ (ws)+ ~ ident ~ (ws)* ~ leftParen ~ (ws)* ~ ( (ident ~ (TypeOf)?) ~ (ws)* ~ (comma ~(ws)* ~ ident ~ (TypeOf)?)* ~ (ws)* ~ rightParen )
+    )
+    ~ (ws)* ~ leftBracket ~ ((ws)* ~ (let | expr) ~ (ws)*)* ~ rightBracket
+}
+
+t = {
+    (
+      FunctionDef
+    | expr
+    | ws
+    )
+}
+
+token = { t ~ (ws ~ t)* }
+
+file = { SOI ~ (ws)* ~ (token)* ~ (ws)* ~ EOI }
